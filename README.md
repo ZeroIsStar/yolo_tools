@@ -5,3 +5,8 @@
 - Dataset_tools:数据集处理工具，包括标签图像匹配，批量修改类别id，划分数据集，数据统计，模糊图像去除，去重等
 
 # 二、模型训练（ultralytics文档说明，模型训练以及机器人目标检测训练trick，相关参数快速入门，以及模型结构修改教程）
+## ultralytics文档说明
+### 1.安装
+'''bash
+pip install ultralytics
+'''
