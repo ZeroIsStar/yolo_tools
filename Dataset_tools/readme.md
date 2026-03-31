@@ -1,6 +1,11 @@
 
 <div style="text-align: center;">
   数据集处理工具/自定义数据集
+  - chaneg_id.py 用于更改类别id（使用前检查不同同事之间标注数据的标注类别id是否一致，不一致可用这个代码批量修改手动同一类别id）
+  - clear_data.py 删除指定id
+  - detetction_id 数据集的类别和数量定量统计
+  - spilit_data.py 用于划分数据集（训练/验证）
+  - match_txt_jpg.py 清洗漏标数据
 </div>
 
 # 数据集批量处理代码
@@ -101,4 +106,4 @@ clean_yolo_txt_files_advanced(
 
 ### 1. 基本清理（默认参数）
 ```bash
-python clear.py --data_dir /path/to/dataset
+python clear_data.py --data_dir /path/to/dataset
