@@ -1,6 +1,6 @@
 task: detect                     # 任务类型：detect（目标检测）、segment（分割）、classify（分类）
 mode: train                      # 运行模式：train（训练）、val（验证）、predict（预测）、export（导出）
-data: data.yaml  # 数据集配置文件路径（包含类别数、类别名、图像路径等）
+data: data.yaml                  # 数据集配置文件路径（包含类别数、类别名、图像路径等）
 epochs: 100                      # 训练轮数（完整遍历整个数据集的次数）
 time: null                       # 训练时间限制（小时），优先级高于epochs，null表示不限制
 patience: 10                     # 早停轮数：验证集性能连续多少轮无提升则停止训练
