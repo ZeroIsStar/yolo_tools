@@ -23,3 +23,22 @@
 ### 1. 将标签目录下所有类别 2 改为类别 1，并自动备份
 ```bash
 python change_id.py --label-dir /path/to/labels --old-id 2 --new-id 1
+```
+
+# YOLO 标注文件清理工具
+
+## 功能简介
+批量清理 YOLO 格式标注文件（`.txt`），支持：
+- 删除指定类别的所有标注（如去除类别 `3`）
+- 删除完全相同的重复标注（类别 + 坐标完全相同）
+- 可选删除同一类别的多余标注（每个类别仅保留第一个出现的标注，即使坐标不同）
+- 详细的统计报告（处理文件数、移除标注数、各类别移除数量等）
+
+## 函数参数
+
+```python
+clean_yolo_txt_files_advanced(
+    txt_folder,                    # 标签文件夹路径（Path 对象或字符串）
+    remove_class_ids=None,         # 要移除的类别 ID 列表，默认 [3]
+    remove_duplicate_classes=False # 是否只保留每个类别的第一个标注
+)
