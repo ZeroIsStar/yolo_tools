@@ -30,3 +30,11 @@ pip install ultralytics
   <em>图2: yolo11的结构图</em>
 </div>
 对比可以很清楚的看到各个模型之间结构的差异
+
+
+### 3.模型的训练参考
+```txt
+模型的配置文件在ultralytics/cfg/models目录下（yolo3，5，6，8，9，10，11，12，26）
+模型训练参考train_yolo.ipynb
+其中类别的文件为data.yaml,训练配置文件为arg.yaml(各个参数的详细说明在arg.yaml做了说明)
+```
