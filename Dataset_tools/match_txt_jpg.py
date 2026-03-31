@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 import os
 import glob
-
+# 确保数据集的图像和标签是一一匹配的
 image_dir = r"C:\Users\TJDX\Desktop\clean_roboot\image"
 text_dir = r"C:\Users\TJDX\Desktop\clean_roboot\labels"
 
