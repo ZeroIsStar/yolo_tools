@@ -11,6 +11,7 @@
 # bash（安装的包一般是在：miniconda3/lib/python3.8/site-packages/ultralytics）
 pip install ultralytics
 ```
+
 <div align="center">
   <img src="ultralytics.png" alt="ultralytics" width="1000">
   <br>
@@ -23,3 +24,9 @@ pip install ultralytics
 
 ```
 
+<div align="center">
+  <img src="cfg.png" alt="ultralytics" width="1000">
+  <br>
+  <em>图2: yolo11的结构图</em>
+</div>
+对比可以很清楚的看到各个模型之间结构的差异
