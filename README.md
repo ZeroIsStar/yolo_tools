@@ -29,7 +29,7 @@ pip install ultralytics
   <br>
   <em>图2: yolo11的结构图</em>
 </div>
-对比可以很清楚的看到各个模型之间结构的差异，其中yolo11_Adown.yaml为修改结构的目标检测文件
+对比可以很清楚的看到各个模型之间结构的差异，其中yolo11_Adown.yaml为修改结构的目标检测文件，best.pt为其训练的最佳模型权重文件
 
 
 ### 3.模型的训练参考
