@@ -1,0 +1,57 @@
+# Ultralytics 🚀 AGPL-3.0 License - https://ultralytics.com/license
+
+# Ultralytics YOLO11 object detection model with BiFPN neck
+
+# Parameters
+nc: 80 # number of classes
+end2end: True # whether to use end-to-end mode
+reg_max: 1 # DFL bins
+scales: # model compound scaling constants
+  n: [0.5, 0.25, 1024]
+  s: [0.50, 0.50, 1024]
+  m: [0.50, 1.00, 512]
+  l: [1.00, 1.00, 512]
+  x: [1.00, 1.50, 512]
+
+backbone:
+  - [-1, 1, Conv, [64, 3, 2]]  # 0-P1/2
+  - [-1, 1, ADown, [128]] # 1-P2/4
+  - [-1, 2, C3k2, [256]]       # 2-P2/4输出
+  - [-1, 1, ADown, [256]] # 3-P3/8
+  - [-1, 2, C3k2, [512]]       # 4-P3/8输出
+  - [-1, 1, ADown, [512]] # 5-P4/16
+  - [-1, 2, C3k2, [1024]]      # 6-P4/16输出
+  - [-1, 1, SPPF, [1024, 5]]   # 7-空间金字塔池化
+  - [-1, 2, C2PSA, [1024]]     # 8-注意力机制
+
+# 改进版BiFPN Neck
+head:
+  # 特征提取
+  - [8, 1, Conv, [256, 1, 1]]  # 9-P4/16 (256通道)
+  - [4, 1, Conv, [128, 1, 1]]  # 10-P3/8 (128通道)
+  - [2, 1, Conv, [64, 1, 1]]   # 11-P2/4 (64通道)
+  
+  # BiFPN层（可重复多次）
+  # Level 6 to 5 (P4 to P3)
+  - [9, 1, nn.Upsample, [None, 2, "bilinear"]]  # 12
+  - [[10, 12], 1, Concat, [1]]  # 13
+  - [13, 1, C3k2, [128]]  # 14
+  
+  # Level 5 to 4 (P3 to P2)
+  - [14, 1, nn.Upsample, [None, 2, "nearest"]]  # 15
+  - [[11, 15], 1, Concat, [1]]  # 16
+  - [16, 1, C3k2, [64]]   # 17
+  
+  # Bottom-up path
+  # Level 4 to 5 (P2 to P3)
+  - [17, 1, ADown, [64]]   # 18
+  - [[14, 18], 1, Concat, [1]]  # 19
+  - [19, 1, C3k2, [128]]  # 20
+  
+  # Level 5 to 6 (P3 to P4)
+  - [20, 1, ADown, [128]]  # 21
+  - [[9, 21], 1, Concat, [1]]   # 22
+  - [22, 1, C3k2, [256]]  # 23
+  
+  # 检测头
+  - [[17, 20, 23], 1, Detect, [nc]]
