@@ -40,4 +40,5 @@ python3 RGB.py/RGBD.py
 ```txt
 # 主要清洗部分异常编码的图像（异常编码的图像数据会影响模型训练）
 python3 find_corrupt_jpegs.py
+# resize.py 用于调整图像尺寸大小
 ```
