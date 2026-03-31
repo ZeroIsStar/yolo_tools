@@ -73,7 +73,7 @@ lr0: 0.01                        # 初始学习率
 lrf: 0.005                       # 最终学习率 = lr0 * lrf
 momentum: 0.937                  # SGD优化器的动量，Adam优化器的beta1
 weight_decay: 0.0005             # 权重衰减系数（L2正则化）
-warmup_epochs: 0                 # 预热轮数（学习率从低到高线性增长）
+warmup_epochs: 10                # 预热轮数（学习率从低到高线性增长）
 warmup_momentum: 0.8             # 预热阶段的动量值
 warmup_bias_lr: 0.1              # 预热阶段偏置参数的学习率
 box: 5.5                         # 边界框损失的权重（IoU loss）
