@@ -39,3 +39,5 @@ pip install ultralytics
 模型训练微调量化和转出推理预测参考模型训练微调量化和转出推理预测.ipynb
 其中类别的文件为data.yaml,训练配置文件为arg.yaml(各个参数的详细说明在arg.yaml做了说明)
 ```
+### 4.模型的训练技巧
+- 超参数配置：
