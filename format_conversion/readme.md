@@ -10,9 +10,9 @@
 batch_json_to_mask(input_dir: str, output_dir: str, target_class: Union[str, int, None] = None) -> None
 ```
 
-# VOC 格式 XML 转 YOLO 格式 TXT 转换工具:xml2yolo.py
+# VOC 格式 XML 转 YOLO 格式 TXT 转换工具
 
-## 功能简介
+## 功能简介:xml2yolo.py
 将 **Pascal VOC 格式**的目标检测标注文件（`.xml`）批量转换为 **YOLO 格式**的文本文件（`.txt`）。  
 - 自动提取 XML 中的所有类别，生成类别映射文件 `classes.txt`。
 - 支持从已有的类别文件加载类别映射（避免重复提取）。
