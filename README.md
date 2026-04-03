@@ -57,6 +57,34 @@ pip install ultralytics
 </div>
 图3示例可知尺度跨度大，大量小尺度的目标，即可以在原yolo结构的基础上，从小尺度目标上改模型结构，所以借鉴了yolov9的Adown结构，同时修改检测头以及特征融合方式以提升对于小尺度目标的检测效果
 
+# 1. 清理旧版本（如有）
+sudo rm -rf /opt/onnxruntime
+
+# 2. 下载 GPU 版本（CUDA 11.8 兼容版，适用于大多数 RTX 显卡）
+cd /tmp
+wget https://github.com/microsoft/onnxruntime/releases/download/v1.16.3/onnxruntime-linux-x64-gpu-1.16.3.tgz
+
+# 3. 解压到系统目录
+sudo mkdir -p /opt/onnxruntime
+sudo tar -xzf onnxruntime-linux-x64-gpu-1.16.3.tgz -C /opt/onnxruntime --strip-components=1
+
+# 4. 链接库文件到系统路径（重要！）
+echo '/opt/onnxruntime/lib' | sudo tee /etc/ld.so.conf.d/onnxruntime.conf
+sudo ldconfig
+
+# 5. 验证安装
+ls -la /opt/onnxruntime/lib/libonnxruntime.so*
+ls -la /opt/onnxruntime/include/onnxruntime_cxx_api.h
+
+# 6. 设置环境变量（永久生效）
+echo 'export ONNXRUNTIME_ROOT_PATH=/opt/onnxruntime' | sudo tee /etc/profile.d/onnxruntime.sh
+source /etc/profile.d/onnxruntime.sh
+
+# 7. 清理下载文件
+rm -f /tmp/onnxruntime-linux-x64-gpu-1.16.3.tgz
+
+echo "ONNX Runtime GPU 安装完成！路径: /opt/onnxruntime"
+
 在数据量足够大的情况下可以只微调检测头，来适应不同区域下的检测任务，提升区域检测性能，微调代码参考模型训练微调量化和转出推理预测.ipynb文件
 2085721075@qq.com
 
