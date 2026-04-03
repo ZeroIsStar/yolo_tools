@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import rclpy
 from rclpy.node import Node
 from rclpy.qos import ReliabilityPolicy, QoSProfile
@@ -43,11 +44,12 @@ class ImageSaver(Node):
         qos_.reliability = ReliabilityPolicy.BEST_EFFORT
 
         # 为每个相机创建订阅
-        self.subscriptions = {}
+        # 修改：将 subscriptions 改为 camera_subs，避免与 Node 基类属性冲突
+        self.camera_subs = {}
         for camera_name, cam_info in self.cameras.items():
             # 创建互斥回调组，避免多线程同时保存（可选）
             callback_group = MutuallyExclusiveCallbackGroup()
-            self.subscriptions[camera_name] = self.create_subscription(
+            self.camera_subs[camera_name] = self.create_subscription(
                 CompressedImage,
                 cam_info['topic'],
                 partial(self.image_callback, camera_name=camera_name),
