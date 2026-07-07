@@ -1,0 +1,156 @@
+#!/usr/bin/env python3
+import rclpy
+from rclpy.node import Node
+from rclpy.qos import QoSProfile, ReliabilityPolicy
+from sensor_msgs.msg import Image, CompressedImage
+from rclpy.executors import MultiThreadedExecutor
+from rclpy.callback_groups import MutuallyExclusiveCallbackGroup
+from functools import partial
+import cv2
+import numpy as np
+import os
+import time
+
+
+class ImageSaverNode(Node):
+    def __init__(self):
+        super().__init__('image_saver_node')
+
+        # ============ 相机配置 ============
+        # RGB-D 相机（原始彩色图像，未压缩）
+        self.rgbd_cameras = {
+            'camera1': {
+                'topic': '/camera1/color/image_raw',
+                'save_dir': '/capella/lib/python3.10/site-packages/garbage_detection_node/RGBD_data/camera1',
+            },
+            'camera2': {
+                'topic': '/camera2/color/image_raw',
+                'save_dir': '/capella/lib/python3.10/site-packages/garbage_detection_node/RGBD_data/camera2',
+            },
+            'camera4': {
+                'topic': '/camera4/color/image_raw',
+                'save_dir': '/capella/lib/python3.10/site-packages/garbage_detection_node/RGBD_data/camera4',
+            },
+        }
+
+        # RGB 相机（压缩图像）
+        self.rgb_cameras = {
+            'front': {
+                'topic': '/rgb_camera_front/compressed',
+                'save_dir': '/capella/lib/python3.10/site-packages/garbage_detection_node/RGB_data/front',
+            },
+            'back': {
+                'topic': '/rgb_camera_back/compressed',
+                'save_dir': '/capella/lib/python3.10/site-packages/garbage_detection_node/RGB_data/back',
+            },
+            'left': {
+                'topic': '/rgb_camera_left/compressed',
+                'save_dir': '/capella/lib/python3.10/site-packages/garbage_detection_node/RGB_data/left',
+            },
+            'right': {
+                'topic': '/rgb_camera_right/compressed',
+                'save_dir': '/capella/lib/python3.10/site-packages/garbage_detection_node/RGB_data/right',
+            },
+        }
+
+        # QoS 配置（统一为 BEST_EFFORT，depth=1）
+        qos_ = QoSProfile(depth=1)
+        qos_.reliability = ReliabilityPolicy.BEST_EFFORT
+
+        # 为每个相机创建订阅，并记录最后保存时间
+        self.last_save_time = {}
+        self.save_interval = 3.0  # 保存间隔（秒）
+
+        # ---------- 订阅 RGB-D 原始图像 ----------
+        for cam_name, cam_info in self.rgbd_cameras.items():
+            group = MutuallyExclusiveCallbackGroup()
+            self.create_subscription(
+                Image,
+                cam_info['topic'],
+                partial(self.image_callback, camera_name=cam_name, is_compressed=False),
+                qos_,
+                callback_group=group,
+            )
+            self.last_save_time[cam_name] = 0.0
+            self.get_logger().info(f"Subscribed to RGB-D: {cam_info['topic']}")
+
+        # ---------- 订阅 RGB 压缩图像 ----------
+        for cam_name, cam_info in self.rgb_cameras.items():
+            group = MutuallyExclusiveCallbackGroup()
+            self.create_subscription(
+                CompressedImage,
+                cam_info['topic'],
+                partial(self.image_callback, camera_name=cam_name, is_compressed=True),
+                qos_,
+                callback_group=group,
+            )
+            self.last_save_time[cam_name] = 0.0
+            self.get_logger().info(f"Subscribed to RGB: {cam_info['topic']}")
+
+        self.get_logger().info("Image saver node started (supports both raw and compressed images)")
+
+    def image_callback(self, msg, camera_name: str, is_compressed: bool):
+        """
+        统一回调：根据 is_compressed 区分解码方式，定期保存图像
+        """
+        # 1. 解码图像
+        if is_compressed:
+            # 压缩图像解码
+            try:
+                np_arr = np.frombuffer(msg.data, np.uint8)
+                img = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
+                if img is None:
+                    self.get_logger().warn(f"[{camera_name}] Failed to decode compressed image", once=True)
+                    return
+            except Exception as e:
+                self.get_logger().warn(f"[{camera_name}] Decode error: {e}", once=True)
+                return
+        else:
+            # 原始图像解码（假设编码为 BGR，原代码做了 BGR->RGB 转换）
+            if len(msg.data) == 0:
+                return
+            # 将原始数据转为 numpy 数组并 reshape
+            img = np.array(msg.data, dtype=np.uint8).reshape((msg.height, msg.width, 3))
+            # 原代码保留了 BGR->RGB 转换，这里保持一致
+            img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+
+        # 2. 检查保存间隔（每个相机独立）
+        now = time.time()
+        if now - self.last_save_time[camera_name] < self.save_interval:
+            return
+
+        # 3. 确定保存目录并创建
+        # 根据相机名称查找对应的目录（先查 rgbd，再查 rgb）
+        if camera_name in self.rgbd_cameras:
+            save_dir = self.rgbd_cameras[camera_name]['save_dir']
+        elif camera_name in self.rgb_cameras:
+            save_dir = self.rgb_cameras[camera_name]['save_dir']
+        else:
+            self.get_logger().error(f"Unknown camera: {camera_name}")
+            return
+
+        os.makedirs(save_dir, exist_ok=True)
+
+        # 4. 保存图像（文件名包含时间戳）
+        filename = time.strftime("%Y%m%d_%H%M%S", time.localtime(now)) + ".jpg"
+        filepath = os.path.join(save_dir, filename)
+        cv2.imwrite(filepath, img)
+        self.last_save_time[camera_name] = now
+        self.get_logger().info(f"[{camera_name}] Saved image to {filepath}")
+
+
+def main(args=None):
+    rclpy.init(args=args)
+    node = ImageSaverNode()
+    executor = MultiThreadedExecutor(num_threads=4)  # 可根据相机总数调整
+    executor.add_node(node)
+    try:
+        executor.spin()
+    finally:
+        executor.shutdown()
+        node.destroy_node()
+        rclpy.shutdown()
+
+
+if __name__ == '__main__':
+    main()
